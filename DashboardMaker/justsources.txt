@@ -1,5 +1,0 @@
-Map Data:
-https://a2c2srv.mitre.org:8443/datacreator/MapData1.xml
-
-Incoming Data:
-https://a2c2srv.mitre.org:8443/datacreator/MapData2.json
