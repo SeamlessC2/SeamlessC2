@@ -1,0 +1,19 @@
+#S2Header_view{
+ 
+}
+.S2Header-item{
+    padding:5px;
+}
+
+.S2Header-title{
+    font-weight:bold;
+}
+
+.S2Header-date{
+   font-style: italic;
+   padding-left: 5px;
+}
+
+.S2Header-msg{   
+   padding: 5px;   
+}

@@ -6,7 +6,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
     //fields
     dashboards:[], // stored in preferences and loaded
-    select_info:null,
+    select_info:null, //info about the selections
     layout_info:[{
         id:'1',
         layout:'basic',
@@ -41,7 +41,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         layout:'v2h2',
         steps:4
     }],//info about structures of layout
-    
+
     onLaunch: function() {//fires after everything is loaded
         //handle the load of the dashboards
         this.loadDashboardStore();
@@ -73,22 +73,22 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                             }
                         }
                     };
-                    self.select_info.layout_selected =self.layout_info[parseInt(nodes[0].data.name)-1]; 
+                    self.select_info.layout_selected =self.layout_info[parseInt(nodes[0].data.name)-1];
                     var lay = Ext.getCmp("dashboard_create").getLayout();
                     self.updateDatasourceSelectView();
-                    
-                    lay.setActiveItem(1); 
+
+                    lay.setActiveItem(1);
                     Ext.getCmp('dashboard_create_move_prev').setDisabled(false);
                     Ext.getCmp('dashboard_create_move_next').setDisabled(false);
                 }
             },
             '#dashboard_create_move_prev':{
                 click: function(btn) {
-                    var layout = btn.up("panel").getLayout();     
+                    var layout = btn.up("panel").getLayout();
                     if(self.select_info.cur_step > self.select_info.layout_selected.steps){
                         layout.setActiveItem(1);
                     }
-                    self.select_info.cur_step -= 1;  
+                    self.select_info.cur_step -= 1;
                     if(self.select_info.cur_step == 0){
                         layout.setActiveItem(0);
                         Ext.getCmp('dashboard_create_move_prev').setDisabled(true);
@@ -96,7 +96,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         Ext.getCmp('dashboard_create_move_next').setDisabled(false);
                         //reset the datatsource selector
                         self.updateDatasourceSelectView();
-                    }                   
+                    }
                 }
             },
             '#dashboard_create_move_next':{
@@ -106,9 +106,9 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         layout.setActiveItem(1);
                         Ext.getCmp('dashboard_create_move_prev').setDisabled(false);
                     }
-                    self.select_info.cur_step += 1;                     
-                    
-                    if(self.select_info.cur_step <= self.select_info.layout_selected.steps){                        
+                    self.select_info.cur_step += 1;
+
+                    if(self.select_info.cur_step <= self.select_info.layout_selected.steps){
                         Ext.getCmp('dashboard_create_move_next').setDisabled(false);
                         if(!self.select_info.step_data[self.select_info.cur_step])
                             self.select_info.step_data[self.select_info.cur_step] = {
@@ -119,15 +119,15 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         self.updateDatasourceSelectView();
                     }else{
                         Ext.getCmp('dashboard_create_move_next').setDisabled(true);
-                        layout.setActiveItem(2); 
+                        layout.setActiveItem(2);
                         log('Selected Info',self.select_info);
-                    }                           
+                    }
                 }
             },
             'dashboard_datasource_select button':{
-                click:function(btn,e,eOpts){                    
+                click:function(btn,e,eOpts){
                     log("Add datasource btn pressed");
-                    
+
                     //get input values
                     var tf =  Ext.getCmp('dash_urlInput');
                     var datasource=null;
@@ -143,30 +143,30 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                                 type:'Tailor',
                                 source:tf.getValue()
                             };
-                            
+
                             //handle recommendations by updating model
                             var params = {
                                 activityType: "Monitoring",
                                 dataSource: datasource.source
                             };
-                            var tailorController = self.getController("Tailor");                            
-                            tailorController.getRecommendations(self,params,self.processRecommendationsCallback);                            
+                            var tailorController = self.getController("Tailor");
+                            tailorController.getRecommendations(self,params,self.processRecommendationsCallback);
                         }
-                    }                    
-                    self.select_info.step_data[self.select_info.cur_step].datasource = datasource;                        
-                        
+                    }
+                    self.select_info.step_data[self.select_info.cur_step].datasource = datasource;
+
                     //show widget selector
-                    Ext.getCmp('dashboard_datasource_widget_select').getLayout().setActiveItem(1);   
+                    Ext.getCmp('dashboard_datasource_widget_select').getLayout().setActiveItem(1);
                     Ext.getCmp('dashboard_datasource_widget_move_next').setDisabled(true);
                     Ext.getCmp('dashboard_datasource_widget_move_prev').setDisabled(false);
                 }
-            },                
+            },
             '#dashboard_widget_select': {
-                selectionchange: function(view, nodes ){ 
+                selectionchange: function(view, nodes ){
                     if(nodes.length > 0){
                         var selected_widget = nodes[0].data;
                         log("Widget Selected:"+selected_widget.name,selected_widget);
-                        self.select_info.step_data[self.select_info.cur_step].widget = selected_widget;                           
+                        self.select_info.step_data[self.select_info.cur_step].widget = selected_widget;
                     }
                 }
             }
@@ -191,13 +191,13 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
         log("Initialized Dashboard Controller");
     },
-    processRecommendationsCallback:function(data,self){ 
+    processRecommendationsCallback:function(data,self){
         //see if there are any recommendations
         var widget_recommendations =[];
         var recs = data["visRecommendations"];
         log("visRecommendations",recs);
         if(typeof(recs) !== 'undefined' && recs != null && recs.length>0){
-            //remodel        
+            //remodel
             for (i in recs){
                 var rec = recs[i];
                 log("Recommendation", rec);
@@ -206,16 +206,16 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                     data:rec
                 });
             }
-        }    
-        
+        }
+
         //update store with recommendations
-        var widget_store = Ext.StoreManager.lookup('SystemWidgets'); 
-            
+        var widget_store = Ext.StoreManager.lookup('SystemWidgets');
+
         //set the style value in the store if it is recommended
         if(widget_recommendations.length > 0){
             for(i in widget_recommendations){
                 var rec_widget = widget_recommendations[i];
-                
+
                 Ext.each(widget_store.getRange(), function (record, idx, a) {
                     if(rec_widget.name == record.data.name){
                         record.data.style='widget_recommended';
@@ -234,7 +234,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             }
         }
         Ext.getCmp('dashboard_widget_select').refresh();
-                            
+
     },
     updateDatasourceSelectView:function(){
         var self=this;
@@ -243,11 +243,11 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         hdr.update('<div class="dashboard_layout_select_panel_hdr" >Step '+self.select_info.cur_step +' of ('+(self.select_info.layout_selected.steps+1)+') <br/> Select your data source and widget for the green area.</div>')
         var img = Ext.getCmp('dashboard_layout_select_panel_img');
         img.update('<div class="dashboard_layout_select_panel_thumb"><img id="dashboard_layout_select_panel_img" src="resources/images/Grid'+self.select_info.layout_selected.id+'_'+self.select_info.cur_step+'.png"></div>');
-        
+
         //reset datasource fields
         Ext.getCmp('dash_tailor_combobox').reset();
         Ext.getCmp('dash_urlInput').setValue('');
-        
+
         var widget = null;
         if(self.select_info.step_data[self.select_info.cur_step]){
             var info = self.select_info.step_data[self.select_info.cur_step];
@@ -257,12 +257,12 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             else if(info.datasource && info.datasource.type == 'Tailor'){
                 Ext.getCmp('dash_tailor_combobox').select(info.datasource.source);
             }
-            
+
             if(info.widget){
                 widget = info.widget;
             }
         }
-                
+
         //clear widget recommendations
         var widget_store = Ext.StoreManager.lookup('SystemWidgets');
         Ext.each(widget_store.getRange(), function (record, idx, a) {
@@ -273,7 +273,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
         Ext.each(widget_store.getRange(), function (record, idx, a) {
             if(widget != null && widget.name == record.data.name){
-                Ext.getCmp('dashboard_widget_select').getSelectionModel().select(record);            
+                Ext.getCmp('dashboard_widget_select').getSelectionModel().select(record);
             }
         });
         Ext.getCmp('dashboard_widget_select').refresh();
@@ -323,59 +323,66 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             onSuccess:onSuccess,
             onFailure:onFailure
         });
-    /* if setup for loading from json file
-        var store =  this.getDashboardStore();
-         store.load({
-            callback: this.onDashboardStoreLoad,
-            scope: this
-        });*/
-
     },
-    //load in dynamic names for the dashboard menu from the store
-    /*
-    onS2DashboardStoreLoad: function(records, operation, success) {
-        var picker = Ext.getCmp("dashpicker_view");
-        var self = this;
-        Ext.each(records,function(record,id){
-            log("Record:",record);
-            picker.addDashboard({
-                text:record.get('name'),
-                checked: false,
-                group: 'theme',
-                checkHandler: self.dashboardSelectHandler,
-                data:{
-                    name:record.get('name'),
-                    guid:record.get('guid')
-                }
-            });
-        });
-        log("Dashboard view loaded",records);
-    },*/
     onS2DashboardCreate:function(btn, e, eOpts){
-        log("Dashboard Create");
+        log("Creating dashboard",this.select_info );
         var self=this;
 
         OWF.Preferences.findWidgets({
             searchParams: {
-                widgetName: "SeamlessC2"
+                widgetName: ""
             },
             onSuccess: function(results) {
                 log("#OWF widgets:"+results.length);
-                if(results.length== 0){
-                    error("Widgets Not Found:" + SeamlessC2);
+                if(results.length== 0 || results.length== 1){
+                    error("Widgets Not Found:" + S2COMMANDER_WIDGET + "  "+S2HEADER_WIDGET);//environment.js
 
-                }else if(results.length== 1){
-                    log("One Result: ",results[0]);
-                    var s2widget = results[0];
+                }else {
 
-                    var map_widget = self.getDashboardWidgetTemplate("org.owfgoss.owf.examples.GoogleMaps","d182002b-3de2-eb24-77be-95a7d08aa85b","org.owfgoss.owf.examples.GoogleMaps",'100%',700,0,100,1);
+                    log("Results: ",results);
+                    var s2widget = null;
+                    var s2header_widget = null
+                    for(var i=0;i<results.length;i++)
+                    {
+                        if(results[i].value.namespace == S2COMMANDER_WIDGET){
+                            s2widget = results[i];
+                        }
+                        if(results[i].value.namespace == S2HEADER_WIDGET){
+                            s2header_widget=results[i];
+                        }
+                        //check other widgets
+                        for(var idx in self.select_info.step_data)
+                        {
+                            var item = self.select_info.step_data[idx].widget;
+                            if(item.name == results[i].value.namespace) self.select_info.step_data[idx].widget_info = results[i];
+                        }
+                    }
+                    if(s2widget == null){
+                        error("Widget Not Found:" + S2COMMANDER_WIDGET);
+                        return;
+                    }
+                    if(s2header_widget == null){
+                        error("Widget Not Found:" + S2HEADER_WIDGET);
+                        return;
+                    }
+                    //TODO check other widgets
+                    /*for(var idx in self.select_info.step_data)
+                        {
+                            self.select_info.step_data[idx].widget_found = true;
+                        }if(!found){
+                            error("Widgets Not Found:");
+                            return;
+                        }
+                     */
+
+                    //var map_widget = self.getDashboardWidgetTemplate("org.owfgoss.owf.examples.GoogleMaps","d182002b-3de2-eb24-77be-95a7d08aa85b","org.owfgoss.owf.examples.GoogleMaps",'100%',700,0,100,1);
 
                     //self.getDashboardWidgetTemplate(widget.value.universalName,widget.id,widget.value.namespace,'100%',100,0,0);
 
-                    var header_widget = self.getDashboardWidgetTemplate("Channel Shouter","eb5435cf-4021-4f2a-ba69-dde451d12551","Channel Shouter",'100%','100%',0,0);
-                    var footer_widget = self.getDashboardWidgetTemplate("Channel Listener","ec5435cf-4021-4f2a-ba69-dde451d12551","Channel Listener",'100%','100%',0,0);
-                    var command_widget = self.getDashboardWidgetTemplate(s2widget.value.namespace,s2widget.path,s2widget.value.universalName,'100%','100%',0,0);
-                    var basicConfig =self.getFitLayoutTemplate(command_widget,header_widget,footer_widget,map_widget);
+                    var header_widget = self.getDashboardWidgetTemplate(s2header_widget);
+                    var command_widget = self.getDashboardWidgetTemplate(s2widget);
+
+                    var config =self.getConfig(self.select_info,command_widget,header_widget);
 
                     var generatedGUID = OWF.Util.guid();
 
@@ -416,7 +423,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         //defaultSettings: {},
                         description: 'Automatically generated S2 dashboard -'+generatedGUID,
                         guid: generatedGUID,
-                        layoutConfig: basicConfig
+                        layoutConfig: config
                     };
 
                     //create the dashboard
@@ -470,16 +477,14 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
         //add to store
         Ext.each(self.dashboards,function(item,id){
-            log("Record:",item);
+            //log("Record:",item);
             var d = Ext.create('SeamlessC2.model.S2DashboardModel', item);
             self.getS2DashboardStore().add(d);
         });
         var comp = Ext.getCmp("dashpicker_view");
-    ;
-    //this.onS2DashboardStoreLoad(store.data.items);
+
     },
     //they selected a view in the dashboard view
-
     dashboardSelectHandler :function(view, record, row, index, e, eOpts ){
         log('dashboard selected',record);
 
@@ -519,35 +524,93 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             }
         });
     },
-    getDashboardWidgetTemplate:function(universalName,widgetGuid,name,width,height,x,y){
-        var template =
-        {
-            "universalName": universalName,
-            "widgetGuid": widgetGuid,
-            "name": name,
-            "active": true,
-            "x": x,
-            "y": y,
-            //"zIndex": 19020,
-            "minimized": false,
-            "maximized": false,
-            "pinned": false,
-            "collapsed": false,
-            "columnPos": 0,
-            "buttonId": "",
-            "buttonOpened": "",
-            "region": "none",
-            "statePosition": 1,
-            "intentConfig": null,
-            "singleton": false,
-            "floatingWidget": false,
-            "background": false,
-            "height": height,
-            "width": width
+    
+    getConfig:function(info,command_widget,header_widget){
+        var layout = info.layout_selected.layout;
+        var template = null;
+        switch (layout){
+            case 'h1':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                template = this.getH1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1.value.namespace,widget1.id),this.getDashboardWidgetTemplate(widget2.value.namespace,widget2.id));
+                break;
+            case 'v1':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                template = this.getV1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1.value.namespace,widget1.id),this.getDashboardWidgetTemplate(widget2.value.namespace,widget2.id));
+                break;
+            case 'h1v2':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                var widget3 = info.step_data[3].widget_info;
+                template = this.getH1V2LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2),this.getDashboardWidgetTemplate(widget3));
+                break;
+            case 'v2h1':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                var widget3 = info.step_data[3].widget_info;
+                template = this.getV2H1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2),this.getDashboardWidgetTemplate(widget3));
+                break;
+            case 'v1h2':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                var widget3 = info.step_data[3].widget_info;
+                template = this.getV1H2LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2),this.getDashboardWidgetTemplate(widget3));
+                break;
+            case 'h2v1':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                var widget3 = info.step_data[3].widget_info;
+                template = this.getH2V1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2),this.getDashboardWidgetTemplate(widget3));
+                break;
+            case 'v2h2':
+                var widget1 = info.step_data[1].widget_info;
+                var widget2 = info.step_data[2].widget_info;
+                var widget3 = info.step_data[3].widget_info;
+                var widget4 = info.step_data[4].widget_info;
+                template = this.getV2H2LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2),this.getDashboardWidgetTemplate(widget3),this.getDashboardWidgetTemplate(widget4));
+                break;
+
+            default://basic
+                var widget = info.step_data[1].widget_info;
+                template = this.getBasicLayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget.value.namespace,widget.id));
         }
         return template;
     },
-    getFitLayoutTemplate:function(s2_widget,header_widget,footer_widget,content1_widget){
+    getDashboardWidgetTemplate:function(widget,name,width,height,x,y){
+        var template;
+        if(widget.id && widget.value.namespace){
+            var widgetGuid = widget.id; 
+            var universalName = widget.value.namespace;
+            template =
+            {
+                "universalName": universalName,
+                "widgetGuid": widgetGuid,
+                "name": name || universalName || '' ,
+                "active": true,
+                "x":x || 0,
+                "y":y || 0,
+                //"zIndex": 19020,
+                "minimized": false,
+                "maximized": false,
+                "pinned": false,
+                "collapsed": false,
+                "columnPos": 0,
+                "buttonId": "",
+                "buttonOpened": "",
+                "region": "none",
+                "statePosition": 1,
+                "intentConfig": null,
+                "singleton": false,
+                "floatingWidget": false,
+                "background": false,
+                "height": height || '100%',
+                "width": width || '100%'
+            }
+        }
+        return template;
+    },
+    getFramework:function(s2_widget,header_widget,content){ // the basic layout with s2 widget and header
         var template =
         {
             "xtype": "container",
@@ -598,32 +661,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         "type": "vbox",
                         "align": "stretch"
                     },
-                    "items": [
-                    {
-                        "xtype": "fitpane",
-                        "cls": "top",
-                        "htmlText": "95%",
-                        "items": [],
-                        "widgets": [content1_widget],
-                        "paneType": "fitpane",
-                        "flex": 0.95,
-                        "defaultSettings": {}
-                    }
-                    /*,
-                {
-                    "xtype": "dashboardsplitter"
-                },
-                {
-                    "xtype": "fitpane",
-                    "cls": "bottom",
-                    "htmlText": "5%",
-                    "items": [footer_widget],
-                    "paneType": "fitpane",
-                    "flex": 0.05,
-                    "widgets": [],
-                    "defaultSettings": {}
-                }*/
-                    ],
+                    "items": content,
                     "flex": 0.95
                 }
                 ],
@@ -632,7 +670,292 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             }]
         };
         return template;
+    },
+    getBasicLayoutTemplate:function(s2_widget,header_widget,content1_widget){
+        var content = [{
+            "xtype": "fitpane",
+            "cls": "top",
+            "htmlText": "95%",
+            "items": [],
+            "widgets": [content1_widget],
+            "paneType": "fitpane",
+            "flex": 0.95,
+            "defaultSettings": {}
+        }] ;
+        return this.getFramework(s2_widget,header_widget,content);
+    },
+    getV1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget){
+        var content = [{
+            "xtype": "fitpane",
+            "cls": "top",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "widgets": [content1_widget],
+            "paneType": "fitpane",
+            "defaultSettings": {}
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "fitpane",
+            "cls": "bottom",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "paneType": "fitpane",
+            "widgets": [content2_widget],
+            "defaultSettings": {}
+        }];
+        return this.getFramework(s2_widget,header_widget,content);
+    },
+    getH1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget){
+        var layout = this.getV1LayoutTemplate(s2_widget,header_widget,content1_widget,content2_widget);
+        layout.items[2].items[2].layout.type="hbox";
+        layout.items[2].items[2].items[0].cls = "left";
+        layout.items[2].items[2].items[2].cls = "right";
+        return layout;
+    },
+    getH1V2LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
+        var content = [
+        {
+            "xtype": "fitpane",
+            "cls": "left",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "widgets": [content1_widget],
+            "paneType": "fitpane",
+            "defaultSettings": {}
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "container",
+            "cls": "vbox right",
+            "layout": {
+                "type": "vbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "top",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets": [content2_widget],
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "bottom",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets": [content3_widget],
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        }
+        ];
+        var layout = this.getFramework(s2_widget,header_widget,content);
+        layout.items[2].items[2].cls = "hbox bottom";
+        layout.items[2].items[2].layout.type = "hbox";
+        return layout;
+    },
+    getV1H2LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
+        var content = [
+        {
+            "xtype": "fitpane",
+            "cls": "top",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "widgets": [content1_widget],
+            "paneType": "fitpane",
+            "defaultSettings": {}
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "container",
+            "cls": "hbox bottom",
+            "layout": {
+                "type": "hbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "left",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets":  [content2_widget],
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "right",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets": [content3_widget],
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        }
+        ];
+        var layout = this.getFramework(s2_widget,header_widget,content);
+        return layout;
+    },
+    getH2V1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
+        var content = [        
+        {
+            "xtype": "container",
+            "cls": "hbox top",
+            "layout": {
+                "type": "hbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "left",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets":  [content1_widget],
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "right",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets": [content2_widget],
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "fitpane",
+            "cls": "bottom",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "widgets": [content3_widget],
+            "paneType": "fitpane",
+            "defaultSettings": {}
+        }
+        ];
+        var layout = this.getFramework(s2_widget,header_widget,content);
+        return layout;
+    },
+    getV2H2LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget,content4_widget){
+        var content = [        
+        {
+            "xtype": "container",
+            "cls": "hbox top",
+            "layout": {
+                "type": "hbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "left",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets": [content1_widget],
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "right",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets": [content2_widget],
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "container",
+            "cls": "hbox bottom",
+            "layout": {
+                "type": "hbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "left",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets": [content3_widget],
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "right",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets":  [content4_widget],
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        }
+        ];
+        var layout = this.getFramework(s2_widget,header_widget,content);
+        return layout;
     }
+
 });
 
 

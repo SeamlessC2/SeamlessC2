@@ -94,9 +94,11 @@ Ext.define('SeamlessC2.controller.Manager', {
         if(OWF.Util.isRunningInOWF()) {
             this.initOWF();
         }
-        log("Initialized SeamlessC2 Commander");
+        log("Initialized SeamlessC2 Commander");        
     },
-    
+    updateHeader:function(msg){
+        OWF.Eventing.publish('org.mitre.seamlessc2commander.S2Header',{html:msg});
+    },
     
     //load in dynamic names for the dashboard menu
     onAlertsStoreLoad: function(records, operation, success) {
@@ -175,7 +177,7 @@ Ext.define('SeamlessC2.controller.Manager', {
         
                 if(item.value.url.indexOf("examples") == 0 || item.value.url.indexOf("admin") == 0 ){//local to owf
                     if(src.indexOf("http") < 0)//system widget
-                        src = "../owf/"+src;
+                        src = SYSTEM_WIDGET_DIR+src;
                     isSystemWidget = true;
                 }
               
@@ -239,7 +241,7 @@ Ext.define('SeamlessC2.controller.Manager', {
         // -----------------------------------
         // Add behaviour if widget is in OWF
         // -----------------------------------    
-        this.save = function () {
+        /*this.save = function () {
             OWF.Preferences.setUserPreference({
                 namespace: "MITRESeamlessC2",
                 name: 'MITRE.SeamlessCommander.widgetstate',
@@ -249,7 +251,7 @@ Ext.define('SeamlessC2.controller.Manager', {
                 },
                 onFailure: function () {}
             });
-        };
+        };*/
     
         // -----------------------------------
         // Check for launch data

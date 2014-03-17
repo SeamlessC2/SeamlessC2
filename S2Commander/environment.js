@@ -1,14 +1,18 @@
 //GLOBAL VARIABLES
 var LOCAL_8443_URL = "https://localhost:8443/";
 var LOCAL_8080_URL = "http://localhost:8080/";
-var TAILOR_URL = LOCAL_8443_URL+"SeamlessC2/data/";// "https://tinker.mitre.org:8443/";  URL to the TAILOR service
+var TAILOR_URL = LOCAL_8443_URL+"SeamlessC2/S2Commander/data/";// "https://tinker.mitre.org:8443/";  URL to the TAILOR service
 var TAILOR_RECOMMENDATIONS_URL = TAILOR_URL+"tailorcore/recommendations.json";
 //uses proxy webapp from https://github.com/mitre/HTTP-Proxy-Servlet
 var SMARTCOW_URL = "https://localhost:8443/proxy_http/ProxyServlet?http://scout2.mitre.org:8080/cow-server/"; //http://scout2.mitre.org:8080/cow-server/";
 var DASHBOARDMAKER_WIDGET= "DashboardMaker"; // the dashboard maker namespace registered in OWF widgets
 var DATA_SELECTOR_WIDGET= "DataSelector"; // the dataselector namespace registered in OWF widgets
+var S2COMMANDER_WIDGET="SeamlessC2";
+var S2HEADER_WIDGET="S2Header";
 var SHOW_SYSTEM_WIDGETS = true;
-var WIDGET_FILTER = ["MITRE.CIV","Google Maps","HTML Viewer"]; //[]   filters the widget list and only shows these
+var WIDGET_FILTER = [];//["MITRE.CIV","Google Maps","HTML Viewer"]; //[]   filters the widget list and only shows these
+
+var SYSTEM_WIDGET_DIR= "../../owf/";//where are the system widgets
 
 var DEBUG_LOCAL = true;
 var LOGGER_ENABLED = false;

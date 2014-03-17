@@ -8,7 +8,6 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     SmartCowUser:null,//passed in on widget
     
     onLaunch: function() {//fires after everything is loaded
-       // this.loadStore();
         log("SmartCow Controller Launch Complete");                
     },
     
@@ -21,13 +20,20 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     loadStore:function(){
         var store =  this.getSmartCowTasksStore();
         
-        this.SmartCowUser= "mhowansky";//TODO remove
-        if(this.SmartCowUser != null)
+        //this.SmartCowUser= "bdoyle";//TODO remove
+       // this.SmartCowAuth= "YmRveWxlOmJyaWFu";//TODO remove
+        if(this.SmartCowUser != null){
             store.proxy.api.read=store.proxy.api.read+this.SmartCowUser;
-        store.load({
-            callback: this.onStoreLoad, 
-            scope: this
-        });
+        }
+        if(this.SmartCowAuth != null){
+            store.proxy.headers ={
+                Authorization: "Basic "+this.SmartCowAuth // decodeURIComponent(escape(window.atob(this.SmartCowAuth)))
+            };
+            store.load({
+                callback: this.onStoreLoad, 
+                scope: this
+            });
+        }
     },
     //load in dynamic names for the dashboard menu
     onStoreLoad: function(records, operation, success) {
@@ -79,7 +85,7 @@ Ext.define('SeamlessC2.controller.SmartCow', {
             dataType:"xml",
             success:function(data) {
                 data = jQuery.parseJSON(xml2json(data).replace("undefined", ''))
-                console.log(data);
+                log(data);
 				
 				
                 var pIs = data.processInstances.processInstance
@@ -99,10 +105,10 @@ Ext.define('SeamlessC2.controller.SmartCow', {
                 }
             },
             error:function(jqXHR, textStatus, errorThrown ){
-                console.log("failure");
-                console.log(errorThrown);
-                console.log(jqXHR);
-                console.log(textStatus);
+                log("failure");
+                log(errorThrown);
+                log(jqXHR);
+                log(textStatus);
             }
         });
 
@@ -128,7 +134,7 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     },
     //setup OWF specifics
     initOWF:function(){
-                      
+        var self = this;
         // Retrieve saved state
         OWF.Preferences.getUserPreference({
             namespace: "MITRESeamlessC2",
@@ -136,9 +142,20 @@ Ext.define('SeamlessC2.controller.SmartCow', {
             onSuccess: function (response) {
                 if(response.value) {
                     var data = OWF.Util.parseJson(response.value);
+                    if(data.user){
+                        self.SmartCowUser = data.user;
+                    }
+                    if(data.auth){
+                        self.SmartCowAuth = data.auth;
+                    }
                     log("SmartCowData",response);
+                    self.loadStore();
+                }else{
+                    self.getUserAndPwd();
                 }
+               
             }
+            
         });
             
             
@@ -161,6 +178,41 @@ Ext.define('SeamlessC2.controller.SmartCow', {
 
         log("Widget Ready");
         OWF.notifyWidgetReady();
+    },
+    getUserAndPwd:function(){
+        var self = this;
+        Ext.Msg.prompt('SmartCow Credentials', "Enter your SmartCow Username: ", function(btnTxt,
+            userText) {
+            if (btnTxt == 'ok') {
+                Ext.Msg.prompt('SmartCow Credentials', "Enter your SmartCow Password: ", function(btnTxt,
+                    pwdText) {
+                    if (btnTxt == 'ok') {
+                        self.saveUserAndPwd(userText,pwdText);
+                    }
+                });
+            }
+        });
+    },
+    saveUserAndPwd:function(username,pwd){
+        var auth = window.btoa(username+":"+pwd); //(unescape(encodeURIComponent(username+":"+pwd)));
+        this.SmartCowUser = username;
+        this.SmartCowAuth = auth;
+        var self=this;
+        log("SmartCow Save auth",username+"  "+auth);
+        //save in prefs
+        OWF.Preferences.setUserPreference({
+            namespace:"MITRESeamlessC2",
+            name: 'MITRE.SeamlessCommander.SmartCowData',
+            value: Ext.JSON.encode( {user:username,auth:auth} ),
+            onSuccess: function () {
+                log("Save to prefs ok",arguments);
+                self.loadStore();
+            },
+            onFailure: function () {
+                error("Save to prefs error",arguments)
+            }
+        });
+        
     }
 });
 
