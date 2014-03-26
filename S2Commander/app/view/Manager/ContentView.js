@@ -17,7 +17,7 @@ Ext.define('SeamlessC2.view.Manager.ContentView', {
         {html:"Welcome to Seamless C2"},
         {xtype:'dash_picker_main_view' } ,
         {xtype:'datasource_view' } ,
-        {xtype:'smart_cow_tasks_view'},
+        {xtype:'smart_cow_proc_inst_card'},
         {xtype: 'alerts_view'}
     ]
 });

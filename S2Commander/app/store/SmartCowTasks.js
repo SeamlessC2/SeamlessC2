@@ -6,7 +6,7 @@ Ext.define('SeamlessC2.store.SmartCowTasks', {
     proxy: {
         type: 'ajax',
         api: {
-            read: SMARTCOW_URL+"processInstances/tasks.json?assignee=" //set in controller onload
+            read: '' //set in controller onload
         },
         reader: {
             type: 'json',

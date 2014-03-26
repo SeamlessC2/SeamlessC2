@@ -21,7 +21,7 @@ Ext.define('SeamlessC2.controller.Manager', {
         var ow= Ext.JSON.decode(OWF.getIframeId());        
         OWF.Preferences.getUserPreference(
         {
-            namespace:'SeamlessC2.DashboardCreated', 
+            namespace:OWF_NAMESPACE, 
             name:'guid',
             onSuccess:function(pref){
                 log("Pref:",pref);
@@ -31,7 +31,7 @@ Ext.define('SeamlessC2.controller.Manager', {
                         if(state.x<0 && window.parent.location.href.indexOf(pref.value) > 0){
                             OWF.Preferences.setUserPreference(
                             {
-                                namespace:'MITRE.DataSelector',
+                                namespace:OWF_NAMESPACE,
                                 name:'guid',
                                 value:'',
                                 onSuccess:function(pref){
@@ -97,7 +97,7 @@ Ext.define('SeamlessC2.controller.Manager', {
         log("Initialized SeamlessC2 Commander");        
     },
     updateHeader:function(msg){
-        OWF.Eventing.publish('org.mitre.seamlessc2commander.S2Header',{html:msg});
+        OWF.Eventing.publish(OWF_NAMESPACE+'.S2Header',{html:msg});
     },
     
     //load in dynamic names for the dashboard menu
@@ -239,21 +239,6 @@ Ext.define('SeamlessC2.controller.Manager', {
         this.updateOWFWidgetList(); // load the available widgets in system
             
         // -----------------------------------
-        // Add behaviour if widget is in OWF
-        // -----------------------------------    
-        /*this.save = function () {
-            OWF.Preferences.setUserPreference({
-                namespace: "MITRESeamlessC2",
-                name: 'MITRE.SeamlessCommander.widgetstate',
-                value: OWF.Util.toString( this.state ),
-                onSuccess: function () {
-                //console.log(arguments)
-                },
-                onFailure: function () {}
-            });
-        };*/
-    
-        // -----------------------------------
         // Check for launch data
         // -----------------------------------
         var launchData = OWF.Launcher.getLaunchData();
@@ -268,8 +253,8 @@ Ext.define('SeamlessC2.controller.Manager', {
         // -----------------------------------
 
         OWF.Preferences.getUserPreference({
-            namespace: "MITRESeamlessC2",
-            name: 'MITRE.SeamlessCommander.widgetstate',
+            namespace:OWF_NAMESPACE ,
+            name: OWF_NAMESPACE+'.S2Commander.widgetstate',
             onSuccess: function (response) {
                 if(response.value) {
                     var data = OWF.Util.parseJson(response.value);
@@ -281,7 +266,7 @@ Ext.define('SeamlessC2.controller.Manager', {
         // -----------------------------------
         // Subscribe to channel
         // -----------------------------------
-        OWF.Eventing.subscribe('org.mitre.seamlessc2commander', function (sender, msg, channel) {
+        OWF.Eventing.subscribe(OWF_EVENT_PREFIX +'S2commander', function (sender, msg, channel) {
             log("Widget Message Recd",msg);
         });
 

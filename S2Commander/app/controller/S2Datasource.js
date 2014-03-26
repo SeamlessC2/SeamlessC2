@@ -30,17 +30,17 @@ Ext.define('SeamlessC2.controller.S2Datasource', {
         if(OWF.Util.isRunningInOWF()) {           
             // Retrieve saved state
             OWF.Preferences.getUserPreference({
-                namespace: "MITRESeamlessC2",
-                name: 'MITRE.SeamlessCommander.DatasourcePrefs',
+                namespace: OWF_NAMESPACE,
+                name: OWF_NAMESPACE+'.DatasourcePrefs',
                 onSuccess: function (response) {
                     if(response.value) {
                         var data = OWF.Util.parseJson(response.value);
-                        log("User Prefs - MITRE.SeamlessCommander.DatasourcePrefs",response);
+                        log("User Prefs -"+ OWF_NAMESPACE+".DatasourcePrefs",response);
                     }
                 }
             });
             // Subscribe to channel of dataselector
-            OWF.Eventing.subscribe('org.mitre.seamlessc2commander.dataselector', function(sender, msg, channel){
+            OWF.Eventing.subscribe(OWF_EVENT_PREFIX+'dataselector', function(sender, msg, channel){
                 scope:self,self.addDatasource(msg);
             });
         }
@@ -115,7 +115,7 @@ Ext.define('SeamlessC2.controller.S2Datasource', {
         }; 
         //get the user list of dashboards this manages
         OWF.Preferences.getUserPreference({
-            namespace: "MITRESeamlessC2",
+            namespace: OWF_NAMESPACE,
             name: 'MITRE.SeamlessCommander.DatasourceData',
             onSuccess:function(response){ 
                 if(response && response.value){//may be empty or not created
@@ -150,7 +150,7 @@ Ext.define('SeamlessC2.controller.S2Datasource', {
         var root = this.getTreeDataRecurse(store.getRootNode());
         var data = Ext.JSON.encode(root);
         OWF.Preferences.setUserPreference({
-            namespace:"MITRESeamlessC2",
+            namespace:OWF_NAMESPACE,
             name: 'MITRE.SeamlessCommander.DatasourceData',
             value: data,
             onSuccess: function () {

@@ -1,7 +1,7 @@
-Ext.define('SeamlessC2.view.SmartCow.TasksView', {
+Ext.define('SeamlessC2.view.SmartCow.ProcessInstGrid', {
     extend: 'Ext.grid.Panel',
-    alias: 'widget.smart_cow_tasks_view',
-    id:'smart_cow_tasks_view',
+    alias: 'widget.smart_cow_proc_inst_grid',
+    id:'smart_cow_proc_inst_grid',
     store: 'SmartCowTasks',
     title:'User Process Instances',
     hideHeaders: false,

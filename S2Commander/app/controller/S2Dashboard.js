@@ -7,41 +7,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
     //fields
     dashboards:[], // stored in preferences and loaded
     select_info:null, //info about the selections
-    layout_info:[{
-        id:'1',
-        layout:'basic',
-        steps:1
-    },{
-        id:'2',
-        layout:'h1',
-        steps:2
-    },{
-        id:'3',
-        layout:'v1',
-        steps:2
-    },{
-        id:'4',
-        layout:'h1v2',
-        steps:3
-    },{
-        id:'5',
-        layout:'v2h1',
-        steps:3
-    },
-    {
-        id:'6',
-        layout:'v1h2',
-        steps:3
-    },{
-        id:'7',
-        layout:'h2v1',
-        steps:3
-    },{
-        id:'8',
-        layout:'v2h2',
-        steps:4
-    }],//info about structures of layout
-
+    
     onLaunch: function() {//fires after everything is loaded
         //handle the load of the dashboards
         this.loadDashboardStore();
@@ -174,17 +140,17 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         if(OWF.Util.isRunningInOWF()) {
             // Retrieve saved state
             OWF.Preferences.getUserPreference({
-                namespace: "MITRESeamlessC2",
-                name: 'MITRE.SeamlessCommander.DashboardData',
+                namespace: OWF_NAMESPACE,
+                name:  OWF_NAMESPACE+'.DashboardPrefs',
                 onSuccess: function (response) {
                     if(response.value) {
                         var data = OWF.Util.parseJson(response.value);
-                        log("User Prefs - MITRE.SeamlessCommander.DashboardData",response);
+                        log("User Prefs - "+OWF_NAMESPACE+".DashboardPrefs",response);
                     }
                 }
             });
             // Subscribe to channel
-            OWF.Eventing.subscribe('org.mitre.seamlessc2commander.dashboard', function (sender, msg, channel) {
+            OWF.Eventing.subscribe(OWF_EVENT_PREFIX +'dashboard', function (sender, msg, channel) {
                 log("Dashboard Message Recd",msg);
             });
         }
@@ -294,8 +260,8 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
             //get the user list of dashboards this manages
             OWF.Preferences.getUserPreference({
-                namespace: "MITRESeamlessC2",
-                name: 'MITRE.SeamlessCommander.dashboards',
+                namespace: OWF_NAMESPACE,
+                name: OWF_NAMESPACE+'.dashboard_list',
                 onSuccess:function(response){
                     var newdashs = [];
                     if(response && response.value){//may be empty or not created
@@ -350,11 +316,14 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         if(results[i].value.namespace == S2HEADER_WIDGET){
                             s2header_widget=results[i];
                         }
+                        log("checking other widgets");
                         //check other widgets
                         for(var idx in self.select_info.step_data)
                         {
                             var item = self.select_info.step_data[idx].widget;
-                            if(item.name == results[i].value.namespace) self.select_info.step_data[idx].widget_info = results[i];
+                            if(item != null){
+                                if(item.name == results[i].value.namespace) self.select_info.step_data[idx].widget_info = results[i];
+                            }
                         }
                     }
                     if(s2widget == null){
@@ -378,7 +347,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                     //var map_widget = self.getDashboardWidgetTemplate("org.owfgoss.owf.examples.GoogleMaps","d182002b-3de2-eb24-77be-95a7d08aa85b","org.owfgoss.owf.examples.GoogleMaps",'100%',700,0,100,1);
 
                     //self.getDashboardWidgetTemplate(widget.value.universalName,widget.id,widget.value.namespace,'100%',100,0,0);
-
+                    log("Creating widgets templates");
                     var header_widget = self.getDashboardWidgetTemplate(s2header_widget);
                     var command_widget = self.getDashboardWidgetTemplate(s2widget);
 
@@ -394,14 +363,14 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
                         OWF.Preferences.setUserPreference(
                         {
-                            namespace:'SeamlessC2.DashboardCreated',
-                            name:'guid',
-                            value:generatedGUID,
+                            namespace:OWF_NAMESPACE,
+                            name:OWF_NAMESPACE+'.dashboard_created_data',
+                            value:OWF.Util.toString({guid:generatedGUID,data:self.select_info}),
                             onSuccess:function(pref){
                                 log("Set Preferences",pref);
                                 window.open(url,'_blank' );// <- This is what makes it open in a new window.
-                            //window.parent.location.href= url ;
-                            //window.parent.location.reload(true);
+                                //window.parent.location.href= url ;
+                                //window.parent.location.reload(true);
                             },
                             onFailure:function(a){
                                 error("Set Preferences",a);
@@ -494,8 +463,8 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             log("New Dashboard URL:"+url);
             OWF.Preferences.setUserPreference(
             {
-                namespace:'MITRESeamlessC2',
-                name:'MITRE.SeamlessCommander.previousDashboard',
+                namespace:OWF_NAMESPACE,
+                name:OWF_NAMESPACE+'.previous_dashboard',
                 value:record.data.guid,
                 onSuccess:function(pref){
                     log("Set Preferences",pref);
@@ -513,8 +482,8 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
     },
     saveDashboardToPrefs: function () {
         OWF.Preferences.setUserPreference({
-            namespace:"MITRESeamlessC2",
-            name: 'MITRE.SeamlessCommander.dashboards',
+            namespace:OWF_NAMESPACE,
+            name: OWF_NAMESPACE+'.dashboard_list',
             value: OWF.Util.toString( this.dashboards ),
             onSuccess: function () {
                 log("Save to prefs ok",arguments);
@@ -525,19 +494,56 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         });
     },
     
+    //LAYOUT info
+    layout_info:[{
+        id:'1',
+        layout:'basic',
+        steps:1
+    },{
+        id:'2',
+        layout:'h1',
+        steps:2
+    },{
+        id:'3',
+        layout:'v1',
+        steps:2
+    },{
+        id:'4',
+        layout:'h1v2',
+        steps:3
+    },{
+        id:'5',
+        layout:'v2h1',
+        steps:3
+    },
+    {
+        id:'6',
+        layout:'v1h2',
+        steps:3
+    },{
+        id:'7',
+        layout:'h2v1',
+        steps:3
+    },{
+        id:'8',
+        layout:'v2h2',
+        steps:4
+    }],//info about structures of layout
+
     getConfig:function(info,command_widget,header_widget){
+        log("config",info);
         var layout = info.layout_selected.layout;
         var template = null;
         switch (layout){
             case 'h1':
                 var widget1 = info.step_data[1].widget_info;
                 var widget2 = info.step_data[2].widget_info;
-                template = this.getH1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1.value.namespace,widget1.id),this.getDashboardWidgetTemplate(widget2.value.namespace,widget2.id));
+                template = this.getH1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2));
                 break;
             case 'v1':
                 var widget1 = info.step_data[1].widget_info;
                 var widget2 = info.step_data[2].widget_info;
-                template = this.getV1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1.value.namespace,widget1.id),this.getDashboardWidgetTemplate(widget2.value.namespace,widget2.id));
+                template = this.getV1LayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget1),this.getDashboardWidgetTemplate(widget2));
                 break;
             case 'h1v2':
                 var widget1 = info.step_data[1].widget_info;
@@ -573,16 +579,16 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
 
             default://basic
                 var widget = info.step_data[1].widget_info;
-                template = this.getBasicLayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget.value.namespace,widget.id));
+                template = this.getBasicLayoutTemplate(command_widget,header_widget,this.getDashboardWidgetTemplate(widget));
         }
         return template;
     },
-    getDashboardWidgetTemplate:function(widget,name,width,height,x,y){
-        var template;
-        if(widget.id && widget.value.namespace){
+    getDashboardWidgetTemplate:function(widget,width,height,x,y){
+        var template = [];
+        if( widget != null && widget.id && widget.value.namespace){
             var widgetGuid = widget.id; 
             var universalName = widget.value.namespace;
-            template =
+            template =[
             {
                 "universalName": universalName,
                 "widgetGuid": widgetGuid,
@@ -606,8 +612,9 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "background": false,
                 "height": height || '100%',
                 "width": width || '100%'
-            }
+            }]
         }
+        log("template",template);
         return template;
     },
     getFramework:function(s2_widget,header_widget,content){ // the basic layout with s2 widget and header
@@ -625,7 +632,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "cls": "left",
                 "htmlText": "20%",
                 "items": [],
-                "widgets": [s2_widget],
+                "widgets": s2_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {},
                 "flex": 0.20
@@ -646,7 +653,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                     "cls": "top",
                     "htmlText": "5%",
                     "items": [],
-                    "widgets": [header_widget],
+                    "widgets": header_widget,
                     "paneType": "fitpane",
                     "flex": 0.05,
                     "defaultSettings": {}
@@ -677,7 +684,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "cls": "top",
             "htmlText": "95%",
             "items": [],
-            "widgets": [content1_widget],
+            "widgets": content1_widget,
             "paneType": "fitpane",
             "flex": 0.95,
             "defaultSettings": {}
@@ -691,7 +698,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "flex": 1,
             "htmlText": "50%",
             "items": [],
-            "widgets": [content1_widget],
+            "widgets": content1_widget,
             "paneType": "fitpane",
             "defaultSettings": {}
         },
@@ -705,7 +712,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "htmlText": "50%",
             "items": [],
             "paneType": "fitpane",
-            "widgets": [content2_widget],
+            "widgets": content2_widget,
             "defaultSettings": {}
         }];
         return this.getFramework(s2_widget,header_widget,content);
@@ -717,6 +724,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         layout.items[2].items[2].items[2].cls = "right";
         return layout;
     },
+    
     getH1V2LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
         var content = [
         {
@@ -725,7 +733,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "flex": 1,
             "htmlText": "50%",
             "items": [],
-            "widgets": [content1_widget],
+            "widgets": content1_widget,
             "paneType": "fitpane",
             "defaultSettings": {}
         },
@@ -746,7 +754,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "flex": 1,
                 "htmlText": "50%",
                 "items": [],
-                "widgets": [content2_widget],
+                "widgets": content2_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {}
             },
@@ -760,12 +768,69 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "htmlText": "50%",
                 "items": [],
                 "paneType": "fitpane",
-                "widgets": [content3_widget],
+                "widgets": content3_widget,
                 "defaultSettings": {}
             }
             ],
             "flex": 1
         }
+        ];
+        var layout = this.getFramework(s2_widget,header_widget,content);
+        layout.items[2].items[2].cls = "hbox bottom";
+        layout.items[2].items[2].layout.type = "hbox";
+        return layout;
+    },
+     getV2H1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
+        var content = [
+        
+        {
+            "xtype": "container",
+            "cls": "vbox left",
+            "layout": {
+                "type": "vbox",
+                "align": "stretch"
+            },
+            "items": [
+            {
+                "xtype": "fitpane",
+                "cls": "top",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "widgets": content1_widget,
+                "paneType": "fitpane",
+                "defaultSettings": {}
+            },
+            {
+                "xtype": "dashboardsplitter"
+            },
+            {
+                "xtype": "fitpane",
+                "cls": "bottom",
+                "flex": 1,
+                "htmlText": "50%",
+                "items": [],
+                "paneType": "fitpane",
+                "widgets": content2_widget,
+                "defaultSettings": {}
+            }
+            ],
+            "flex": 1
+        },
+        {
+            "xtype": "dashboardsplitter"
+        },
+        {
+            "xtype": "fitpane",
+            "cls": "right",
+            "flex": 1,
+            "htmlText": "50%",
+            "items": [],
+            "widgets": content3_widget,
+            "paneType": "fitpane",
+            "defaultSettings": {}
+        }
+        
         ];
         var layout = this.getFramework(s2_widget,header_widget,content);
         layout.items[2].items[2].cls = "hbox bottom";
@@ -780,7 +845,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "flex": 1,
             "htmlText": "50%",
             "items": [],
-            "widgets": [content1_widget],
+            "widgets": content1_widget,
             "paneType": "fitpane",
             "defaultSettings": {}
         },
@@ -801,7 +866,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "flex": 1,
                 "htmlText": "50%",
                 "items": [],
-                "widgets":  [content2_widget],
+                "widgets":  content2_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {}
             },
@@ -815,7 +880,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "htmlText": "50%",
                 "items": [],
                 "paneType": "fitpane",
-                "widgets": [content3_widget],
+                "widgets": content3_widget,
                 "defaultSettings": {}
             }
             ],
@@ -841,7 +906,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "flex": 1,
                 "htmlText": "50%",
                 "items": [],
-                "widgets":  [content1_widget],
+                "widgets":  content1_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {}
             },
@@ -855,7 +920,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "htmlText": "50%",
                 "items": [],
                 "paneType": "fitpane",
-                "widgets": [content2_widget],
+                "widgets": content2_widget,
                 "defaultSettings": {}
             }
             ],
@@ -870,7 +935,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             "flex": 1,
             "htmlText": "50%",
             "items": [],
-            "widgets": [content3_widget],
+            "widgets": content3_widget,
             "paneType": "fitpane",
             "defaultSettings": {}
         }
@@ -894,7 +959,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "flex": 1,
                 "htmlText": "50%",
                 "items": [],
-                "widgets": [content1_widget],
+                "widgets": content1_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {}
             },
@@ -908,7 +973,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "htmlText": "50%",
                 "items": [],
                 "paneType": "fitpane",
-                "widgets": [content2_widget],
+                "widgets": content2_widget,
                 "defaultSettings": {}
             }
             ],
@@ -931,7 +996,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "flex": 1,
                 "htmlText": "50%",
                 "items": [],
-                "widgets": [content3_widget],
+                "widgets": content3_widget,
                 "paneType": "fitpane",
                 "defaultSettings": {}
             },
@@ -945,7 +1010,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                 "htmlText": "50%",
                 "items": [],
                 "paneType": "fitpane",
-                "widgets":  [content4_widget],
+                "widgets":  content4_widget,
                 "defaultSettings": {}
             }
             ],

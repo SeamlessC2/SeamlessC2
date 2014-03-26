@@ -16,6 +16,7 @@ Ext.define('SeamlessC2.model.SmartCowTaskModel', {
                     "processInstanceUrl",
                     "progress",
                     "variables",
-                    "id"                
+                    "id",
+                    "owf_url"
     ]      
 });

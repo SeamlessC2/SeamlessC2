@@ -107,6 +107,50 @@
         width:160;
 }
 
+
+/*SMART COW */
+.smart-cow-item{
+     clear:both;
+    width:97%;
+    margin:5px auto;
+    padding:5px;
+    max-height: 120px;
+    background-color: #FFE4C4;
+    border-radius: 5px;
+}
+.smart-cow-footer{
+    
+}
+.smart-cow-title{
+    font-weight: bold;
+    font-size: 12px;
+}
+.smart-cow-task-assigned{
+    float:right;
+     padding-left:5px;
+    text-decoration:underline;
+}
+.smart-cow-task-go{
+    float:right;
+    padding-left:5px;
+    color:green;
+    text-decoration:underline;
+}
+
+.smart-cow-task-state{
+   font-style:italic;
+   color:red;
+   font-weight: bold;
+}
+.smart-cow-task-description{
+    padding:10px;
+    max-height: 50px;
+    overflow:auto;
+}
+.smart-cow-item a{
+}
+
+
 /*THEME DEFAULTS*/
 .x-panel-body-default{
     /*background-color: #fff;

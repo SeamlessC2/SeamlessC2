@@ -5,6 +5,8 @@ var LOCAL_8080_URL = "http://localhost:8080/";
 var DEBUG_LOCAL = true;
 var LOGGER_ENABLED = false;
 var CONSOLE_ENABLED = true;
+var OWF_NAMESPACE = "MITRESeamlessC2"; // for the user preferences that are stored in OWF
+var OWF_EVENT_PREFIX = "org.mitre.seamlessc2.";
 
 Ext.Ajax.useDefaultXhrHeader = false; //for cross side scripting xxs http://stackoverflow.com/questions/10830334/ext-ajax-request-sending-options-request-cross-domain-when-jquery-ajax-sends-get
 Ext.Loader.setConfig({

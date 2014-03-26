@@ -5,12 +5,17 @@ var TAILOR_URL = LOCAL_8443_URL+"SeamlessC2/S2Commander/data/";// "https://tinke
 var TAILOR_RECOMMENDATIONS_URL = TAILOR_URL+"tailorcore/recommendations.json";
 //uses proxy webapp from https://github.com/mitre/HTTP-Proxy-Servlet
 var SMARTCOW_URL = "https://localhost:8443/proxy_http/ProxyServlet?http://scout2.mitre.org:8080/cow-server/"; //http://scout2.mitre.org:8080/cow-server/";
+var SMARTCOW_PROC_INSTANCES = SMARTCOW_URL + "processInstances";
+var SMARTCOW_USER_PROC_INSTANCES = SMARTCOW_PROC_INSTANCES +"/tasks.json?assignee=";
+
 var DASHBOARDMAKER_WIDGET= "DashboardMaker"; // the dashboard maker namespace registered in OWF widgets
 var DATA_SELECTOR_WIDGET= "DataSelector"; // the dataselector namespace registered in OWF widgets
 var S2COMMANDER_WIDGET="SeamlessC2";
 var S2HEADER_WIDGET="S2Header";
 var SHOW_SYSTEM_WIDGETS = true;
 var WIDGET_FILTER = [];//["MITRE.CIV","Google Maps","HTML Viewer"]; //[]   filters the widget list and only shows these
+var OWF_NAMESPACE = "MITRESeamlessC2"; // for the user preferences that are stored in OWF
+var OWF_EVENT_PREFIX = "org.mitre.seamlessc2.";
 
 var SYSTEM_WIDGET_DIR= "../../owf/";//where are the system widgets
 

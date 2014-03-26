@@ -15,7 +15,7 @@ Ext.define('SeamlessC2.controller.SmartCowOld', {
         if(OWF.Util.isRunningInOWF()) {           
             // Retrieve saved state
             OWF.Preferences.getUserPreference({
-                namespace: "MITRESeamlessC2",
+                namespace: OWF_NAMESPACE,
                 name: 'MITRE.SeamlessCommander.SmartCowData',
                 onSuccess: function (response) {
                     if(response.value) {

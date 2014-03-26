@@ -56,7 +56,7 @@ Ext.define('SeamlessC2.controller.Tailor', {
             // -----------------------------------
 
             OWF.Preferences.getUserPreference({
-                namespace: "MITRESeamlessC2",
+                namespace: OWF_NAMESPACE,
                 name: 'MITRE.SeamlessCommander.TailorData',
                 onSuccess: function (response) {
                     if(response.value) {
@@ -70,7 +70,7 @@ Ext.define('SeamlessC2.controller.Tailor', {
             // -----------------------------------
             // Subscribe to channel
             // -----------------------------------
-            OWF.Eventing.subscribe('org.mitre.seamlessc2commander.tailor', function (sender, msg, channel) {
+            OWF.Eventing.subscribe(OWF_NAMESPACE+'.tailor', function (sender, msg, channel) {
                 log("Tailor Message Recd",msg);
             });
 

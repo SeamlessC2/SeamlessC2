@@ -2,10 +2,13 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     extend: 'Ext.app.Controller',
     stores: ['SmartCowTasks'],
     models:['SmartCowProcessInstanceModel','SmartCowTaskModel','SmartCowVariablesModel','SmartCowVariableModel'],
-    views: ['SmartCow.TasksView'],
+    views: ['SmartCow.ProcessInstCard','SmartCow.TaskView'],
     
     //fields
-    SmartCowUser:null,//passed in on widget
+    SmartCowUser:null,
+    SmartCowAuth:null,
+    SmartCowTaskData:{},
+    SmartCowUserTaskStores:[],
     
     onLaunch: function() {//fires after everything is loaded
         log("SmartCow Controller Launch Complete");                
@@ -20,10 +23,9 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     loadStore:function(){
         var store =  this.getSmartCowTasksStore();
         
-        //this.SmartCowUser= "bdoyle";//TODO remove
-       // this.SmartCowAuth= "YmRveWxlOmJyaWFu";//TODO remove
         if(this.SmartCowUser != null){
-            store.proxy.api.read=store.proxy.api.read+this.SmartCowUser;
+            //store.proxy.api.read=SMARTCOW_PROC_INSTANCES+".json?";//SMARTCOW_USER_PROC_INSTANCES+this.SmartCowUser;
+            store.proxy.api.read=SMARTCOW_USER_PROC_INSTANCES+this.SmartCowUser;
         }
         if(this.SmartCowAuth != null){
             store.proxy.headers ={
@@ -37,8 +39,65 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     },
     //load in dynamic names for the dashboard menu
     onStoreLoad: function(records, operation, success) {
+        var self=this;
         var store =  this.getSmartCowTasksStore();
-        log("Store load",records);
+        log("SmartCOW Store load",records);
+        var view = Ext.getCmp('smart_cow_proc_inst_card');
+        Ext.each(store.getRange(), function (record, idx, a) {
+            if(record != null ){  
+                var taskstore = Ext.create('Ext.data.Store', {
+                    id:'smart_cow_tasks_store_'+idx,
+                    model: 'SeamlessC2.model.SmartCowTaskModel',
+                    data: task
+                });
+                self.SmartCowUserTaskStores.push(taskstore);
+                
+                //TODO
+                var url = null;
+                if(record.raw.task[0].variables){
+                 Ext.each(record.raw.task[0].variables.variable, function (va, idx2,a) {
+                     if(va.name == 'Additional Info 1'){
+                         record.assigned_dash = va.value;
+                     }
+                 });
+                }
+                var taskview = Ext.create('SeamlessC2.view.SmartCow.TaskView',
+                {
+                    title:record.get('key'),                   
+                    id:'smart_cow_tasks_view_'+idx,
+                    height:300,
+                    items: {       
+                        xtype: 'dataview',
+                        tpl: Ext.create('Ext.XTemplate',
+                            '<tpl for=".">',
+                            '<div class="smart-cow-item" id="smart-cow-item_{id}">',
+                            '   <div class="smart-cow-title">{name}   Id:{id}</div>',   
+                            '   <div class="smart-cow-task-state">State:{state}</div>',                            
+                            '   <div class="smart-cow-task-description">{description}</div>',
+                            '   <div class="smart-cow-footer">',
+                            '       <a href="'+SMARTCOW_URL+'tasks/active/{id}" target="_blank">More info</a>',
+                            '       <div class="smart-cow-task-go" id="smart-cow-task-go-{id}">Go</div>',
+                            '       <div class="smart-cow-task-assigned" id="smart-cow-task-assigned-{id}">Assign {assigned_dash}</div>',
+                            // '<div class="smart-cow-date">{date:date("F j, Y, g:i a")}</div>',  
+                            '   </div>',                            
+                            '</div></tpl>'
+                            ),
+                        itemSelector: 'div.smart-cow-task-item',
+                        store:taskstore
+                    }
+                });
+                view.add(taskview);      
+            }
+        });
+        view.getLayout().setActiveItem(0);  
+        $(".smart-cow-task-assigned").each(function(index,element){
+            var id = $(this).attr('id');
+        });
+        $(".smart-cow-task-assigned").click(self.taskAssign);
+        
+    },
+    taskAssign:function(evt){
+        log(evt);
     },
     // Retrieve all assigned active tasks for a specified assignee
     getUserTasks:function (user,callback){
@@ -137,8 +196,8 @@ Ext.define('SeamlessC2.controller.SmartCow', {
         var self = this;
         // Retrieve saved state
         OWF.Preferences.getUserPreference({
-            namespace: "MITRESeamlessC2",
-            name: 'MITRE.SeamlessCommander.SmartCowData',
+            namespace: OWF_NAMESPACE,
+            name: OWF_NAMESPACE+'.SmartCowData',
             onSuccess: function (response) {
                 if(response.value) {
                     var data = OWF.Util.parseJson(response.value);
@@ -148,19 +207,19 @@ Ext.define('SeamlessC2.controller.SmartCow', {
                     if(data.auth){
                         self.SmartCowAuth = data.auth;
                     }
+                    if(data.task_data){
+                        self.SmartCowTaskData = data.task_data;
+                    }
                     log("SmartCowData",response);
                     self.loadStore();
                 }else{
                     self.getUserAndPwd();
-                }
-               
-            }
-            
+                }               
+            }            
         });
-            
-            
+                        
         // Subscribe to channel
-        OWF.Eventing.subscribe('org.mitre.seamlessc2commander.smartcow', function (sender, msg, channel) {
+        OWF.Eventing.subscribe(OWF_NAMESPACE+'.smartcow', function (sender, msg, channel) {
             log("SmartCow Message Recd",msg);
         });
     
@@ -187,23 +246,27 @@ Ext.define('SeamlessC2.controller.SmartCow', {
                 Ext.Msg.prompt('SmartCow Credentials', "Enter your SmartCow Password: ", function(btnTxt,
                     pwdText) {
                     if (btnTxt == 'ok') {
-                        self.saveUserAndPwd(userText,pwdText);
+                        var auth = window.btoa(userText+":"+pwdText); //(unescape(encodeURIComponent(username+":"+pwd)));
+                        self.SmartCowUser = userText;
+                        self.SmartCowAuth = auth;
+                        self.savePreferences();
                     }
                 });
             }
         });
     },
-    saveUserAndPwd:function(username,pwd){
-        var auth = window.btoa(username+":"+pwd); //(unescape(encodeURIComponent(username+":"+pwd)));
-        this.SmartCowUser = username;
-        this.SmartCowAuth = auth;
+    savePreferences:function(){       
         var self=this;
-        log("SmartCow Save auth",username+"  "+auth);
+        log("SmartCow Save Preferences",self.SmartCowUser+"  "+self.SmartCowAuth);
         //save in prefs
         OWF.Preferences.setUserPreference({
-            namespace:"MITRESeamlessC2",
-            name: 'MITRE.SeamlessCommander.SmartCowData',
-            value: Ext.JSON.encode( {user:username,auth:auth} ),
+            namespace:OWF_NAMESPACE,
+            name: OWF_NAMESPACE+'.SmartCowData',
+            value: Ext.JSON.encode( {
+                user:self.SmartCowUser,
+                auth:self.SmartCowAuth,
+                task_data:self.SmartCowTaskData
+            } ),
             onSuccess: function () {
                 log("Save to prefs ok",arguments);
                 self.loadStore();

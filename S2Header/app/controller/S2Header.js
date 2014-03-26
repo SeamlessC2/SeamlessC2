@@ -39,7 +39,7 @@ Ext.define('S2Header.controller.S2Header', {
         var self = this;   
         // Retrieve saved state
         OWF.Preferences.getUserPreference({
-            namespace: "MITRESeamlessC2",
+            namespace: OWF_NAMESPACE,
             name: 'MITRE.SeamlessCommander.S2HeaderData',
             onSuccess: function (response) {
                 if(response.value) {
@@ -51,7 +51,7 @@ Ext.define('S2Header.controller.S2Header', {
             
             
         // Subscribe to channel
-        OWF.Eventing.subscribe('org.mitre.seamlessc2commander.S2Header', function (sender, msg, channel) {
+        OWF.Eventing.subscribe(OWF_NAMESPACE+'.S2Header', function (sender, msg, channel) {
             log("S2Header Message Recd",msg);
             self.setMessage(msg.html);
         });
