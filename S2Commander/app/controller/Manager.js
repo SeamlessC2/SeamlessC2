@@ -69,8 +69,8 @@ Ext.define('SeamlessC2.controller.Manager', {
         this.preInit();
         this.dashboard_controller = this.getController('S2Dashboard');
         this.dashboard_controller.init();        
-        this.datsource_controller = this.getController('S2Datasource');
-        this.datsource_controller.init();
+        this.datasource_controller = this.getController('S2Datasource');
+        this.datasource_controller.init();
         this.tailor_controller = this.getController('Tailor');
         this.tailor_controller.init();
         this.smartcow_controller = this.getController('SmartCow');
@@ -93,7 +93,9 @@ Ext.define('SeamlessC2.controller.Manager', {
             
         if(OWF.Util.isRunningInOWF()) {
             this.initOWF();
-        }
+        }        
+          
+            
         log("Initialized SeamlessC2 Commander");        
     },
     updateHeader:function(msg){
@@ -104,25 +106,7 @@ Ext.define('SeamlessC2.controller.Manager', {
     onAlertsStoreLoad: function(records, operation, success) {
         var alerts_view = Ext.getCmp("alerts_view");
         var self = this;
-        /*
-        Ext.each(records,function(record,id){
-            log("Record:",record);
-            alerts_view.add({
-                xtype:'button',
-                width:42,
-                height:32,
-                cls: 'alerts_btn',
-                text:record.get('name'),
-                checked: false,
-                group: 'theme',
-                checkHandler: self.alertSelectHandler,
-                data:{
-                    name:record.get('name'),
-                    guid:record.get('guid')
-                }
-            });
-        });*/
-       
+        
         log("Alerts load",records);
     },
     alertSelectHandler :function(menuitem,success){
@@ -168,6 +152,7 @@ Ext.define('SeamlessC2.controller.Manager', {
             var name = item.value.namespace;
             var guid = item.id;
             var src = item.value.smallIconUrl;
+             var intents = item.value.intents;
             var style = '';                    
             var isSystemWidget = false;
             var data={};
@@ -182,7 +167,7 @@ Ext.define('SeamlessC2.controller.Manager', {
                 }
               
                 if((isSystemWidget && SHOW_SYSTEM_WIDGETS) || !isSystemWidget){  //environment.js  
-                  newlist.push([guid,name,src,item.value.description,item.value.path,style,data]);
+                  newlist.push([guid,name,src,item.value.description,item.value.path,style,data,intents]);
                 }
             }
         }                

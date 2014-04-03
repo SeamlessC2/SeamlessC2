@@ -1,6 +1,6 @@
 Ext.define('SeamlessC2.controller.S2Dashboard', {
     extend: 'Ext.app.Controller',
-    stores: ['S2Dashboard','S2DashboardImages'],
+    stores: ['S2Dashboard','S2DashboardImages','TailorSources'],
     models:['S2DashboardModel'],
     views: [ 'Dashboard.DashPickerMainView', 'Dashboard.DashPickerView','Dashboard.DashboardSelectView','Dashboard.DashboardCreateView','Dashboard.DashboardDatasourceWidgetView','Dashboard.DashboardSelectPanelView','Dashboard.DashboardDatasourceSelectView','Dashboard.DashboardWidgetSelectView' ],
 
@@ -95,19 +95,33 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                     log("Add datasource btn pressed");
 
                     //get input values
+                    var data = {};
                     var tf =  Ext.getCmp('dash_urlInput');
                     var datasource=null;
                     if(tf.getValue()){
                         datasource = {
-                            type:'URL',
-                            source:tf.getValue()
+                            source:'URL',
+                            data:{
+                                Url:tf.getValue()
+                            },
+                            name:tf.getValue()
                         };
                     }else {
                         tf =  Ext.getCmp('dash_tailor_combobox');
-                        if(tf.getValue()){
+                        var val = tf.getValue();
+                        if(val){
+                            var store = this.getTailorSourcesStore();
+                            Ext.each(store.getRange(), function (record, idx, a) {
+                                if(record != null ){   
+                                    if(record.data.name == val){
+                                        data = record.data;
+                                    }
+                                }
+                            });
                             datasource = {
-                                type:'Tailor',
-                                source:tf.getValue()
+                                source:'Tailor',
+                                data:data,
+                                name:val
                             };
 
                             //handle recommendations by updating model
@@ -217,11 +231,11 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         var widget = null;
         if(self.select_info.step_data[self.select_info.cur_step]){
             var info = self.select_info.step_data[self.select_info.cur_step];
-            if(info.datasource && info.datasource.type == 'URL'){
-                Ext.getCmp('dash_urlInput').setValue(info.datasource.source);
+            if(info.datasource && info.datasource.source == 'URL'){
+                Ext.getCmp('dash_urlInput').setValue(info.datasource.name);
             }
-            else if(info.datasource && info.datasource.type == 'Tailor'){
-                Ext.getCmp('dash_tailor_combobox').select(info.datasource.source);
+            else if(info.datasource && info.datasource.source == 'Tailor'){
+                Ext.getCmp('dash_tailor_combobox').select(info.datasource.name);
             }
 
             if(info.widget){
@@ -316,7 +330,6 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         if(results[i].value.namespace == S2HEADER_WIDGET){
                             s2header_widget=results[i];
                         }
-                        log("checking other widgets");
                         //check other widgets
                         for(var idx in self.select_info.step_data)
                         {
@@ -365,12 +378,15 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
                         {
                             namespace:OWF_NAMESPACE,
                             name:OWF_NAMESPACE+'.dashboard_created_data',
-                            value:OWF.Util.toString({guid:generatedGUID,data:self.select_info}),
+                            value:Ext.JSON.encode({
+                                guid:generatedGUID,
+                                data:self.select_info
+                            }),
                             onSuccess:function(pref){
                                 log("Set Preferences",pref);
                                 window.open(url,'_blank' );// <- This is what makes it open in a new window.
-                                //window.parent.location.href= url ;
-                                //window.parent.location.reload(true);
+                            //window.parent.location.href= url ;
+                            //window.parent.location.reload(true);
                             },
                             onFailure:function(a){
                                 error("Set Preferences",a);
@@ -450,7 +466,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
             var d = Ext.create('SeamlessC2.model.S2DashboardModel', item);
             self.getS2DashboardStore().add(d);
         });
-        var comp = Ext.getCmp("dashpicker_view");
+    //var comp = Ext.getCmp("dashpicker_view");
 
     },
     //they selected a view in the dashboard view
@@ -780,7 +796,7 @@ Ext.define('SeamlessC2.controller.S2Dashboard', {
         layout.items[2].items[2].layout.type = "hbox";
         return layout;
     },
-     getV2H1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
+    getV2H1LayoutTemplate:function(s2_widget,header_widget,content1_widget,content2_widget,content3_widget){
         var content = [
         
         {

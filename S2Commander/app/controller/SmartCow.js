@@ -11,13 +11,15 @@ Ext.define('SeamlessC2.controller.SmartCow', {
     SmartCowUserTaskStores:[],
     
     onLaunch: function() {//fires after everything is loaded
-        log("SmartCow Controller Launch Complete");                
+        log("SmartCow Controller Launch Complete");    
+      
     },
     
     init: function() {           
         if(OWF.Util.isRunningInOWF()) {
             this.initOWF();
         }
+        
         log("Initialized SmartCow Controller");
     },
     loadStore:function(){
@@ -42,62 +44,134 @@ Ext.define('SeamlessC2.controller.SmartCow', {
         var self=this;
         var store =  this.getSmartCowTasksStore();
         log("SmartCOW Store load",records);
-        var view = Ext.getCmp('smart_cow_proc_inst_card');
-        Ext.each(store.getRange(), function (record, idx, a) {
-            if(record != null ){  
-                var taskstore = Ext.create('Ext.data.Store', {
-                    id:'smart_cow_tasks_store_'+idx,
-                    model: 'SeamlessC2.model.SmartCowTaskModel',
-                    data: task
-                });
-                self.SmartCowUserTaskStores.push(taskstore);
-                
-                //TODO
-                var url = null;
-                if(record.raw.task[0].variables){
-                 Ext.each(record.raw.task[0].variables.variable, function (va, idx2,a) {
-                     if(va.name == 'Additional Info 1'){
-                         record.assigned_dash = va.value;
-                     }
-                 });
-                }
-                var taskview = Ext.create('SeamlessC2.view.SmartCow.TaskView',
-                {
-                    title:record.get('key'),                   
-                    id:'smart_cow_tasks_view_'+idx,
-                    height:300,
-                    items: {       
-                        xtype: 'dataview',
-                        tpl: Ext.create('Ext.XTemplate',
-                            '<tpl for=".">',
-                            '<div class="smart-cow-item" id="smart-cow-item_{id}">',
-                            '   <div class="smart-cow-title">{name}   Id:{id}</div>',   
-                            '   <div class="smart-cow-task-state">State:{state}</div>',                            
-                            '   <div class="smart-cow-task-description">{description}</div>',
-                            '   <div class="smart-cow-footer">',
-                            '       <a href="'+SMARTCOW_URL+'tasks/active/{id}" target="_blank">More info</a>',
-                            '       <div class="smart-cow-task-go" id="smart-cow-task-go-{id}">Go</div>',
-                            '       <div class="smart-cow-task-assigned" id="smart-cow-task-assigned-{id}">Assign {assigned_dash}</div>',
-                            // '<div class="smart-cow-date">{date:date("F j, Y, g:i a")}</div>',  
-                            '   </div>',                            
-                            '</div></tpl>'
-                            ),
-                        itemSelector: 'div.smart-cow-task-item',
-                        store:taskstore
-                    }
-                });
-                view.add(taskview);      
-            }
-        });
-        view.getLayout().setActiveItem(0);  
-        $(".smart-cow-task-assigned").each(function(index,element){
-            var id = $(this).attr('id');
-        });
-        $(".smart-cow-task-assigned").click(self.taskAssign);
+        if(records.length > 0){
+            var view = Ext.getCmp('smart_cow_proc_inst_card');
         
+            Ext.each(store.getRange(), function (record, idx, a) {
+                if(record != null ){   
+                    Ext.each(record.raw.task, function (task,arr_idx) {
+                        if(task.variables){
+                            Ext.each(task.variables.variable, function (va, idx2,a) {
+                                if(va.name == 'Additional Info 1'){
+                                    task.owf_url = va.value;
+                                }
+                            });
+                        }
+                    });
+                    var taskstore = Ext.create('Ext.data.Store', {
+                        id:'smart_cow_tasks_store_'+idx,
+                        model: 'SeamlessC2.model.SmartCowTaskModel',
+                        data: record.raw.task
+                    });
+                    self.SmartCowUserTaskStores.push(taskstore);
+               
+                    var taskview = Ext.create('SeamlessC2.view.SmartCow.TaskView',
+                    {
+                        title:record.get('key'),                   
+                        id:'smart_cow_tasks_view_'+idx,
+                        height:300,
+                        items: {       
+                            xtype: 'dataview',
+                            tpl: Ext.create('Ext.XTemplate',
+                                '<tpl for=".">',
+                                '<div class="smart-cow-item" id="smart-cow-item_{id}">',
+                                '   <div class="smart-cow-title">{name}   Id:{id}</div>',   
+                                '   <div class="smart-cow-task-state">State:{state}</div>',                            
+                                '   <div class="smart-cow-task-description">{description}</div>',
+                                '   <div class="smart-cow-footer">',
+                                '       <a href="'+SMARTCOW_URL+'tasks/active/{id}" target="_blank">More info</a>',
+                                '<tpl if="owf_url != undefined"><div class="smart-cow-task-go" id="smart-cow-task-go-{id}"><a id="smart-cow-task-go-href_{id}" href="{owf_url}" target="_blank">Go</a></div></tpl>',
+                                '       <div class="smart-cow-task-assigned" id="smart-cow-task-assigned-{id}" >Assign</div>',
+                                '<div class="smart-cow-date">{duedate:date("F j, Y, g:i a")}</div>',  
+                                '   </div>', 
+                                '<div class="smart-cow-assign" id="smart-cow-assign_{id}" >',
+                                '<div id="smart-cow-assign-title_{id}"></div>',
+                                '<ul id="smart-cow-assign-ul_{id}"></ul>',
+                                '</div>',
+                                '</div></tpl>'
+                                ),
+                            listeners: {
+                                el: {
+                                    click: function(cmp){
+                                        scope:self;
+                                    self.onAssignClick(cmp);
+                                    },
+                                    delegate: '.smart-cow-task-assigned'
+                                }
+                            },
+                            itemSelector: 'div.smart-cow-task-item',
+                            store:taskstore                        
+                        }
+                    });
+                    view.add(taskview);      
+                }
+            });
+            var layout = view.getLayout();           
+            layout.setActiveItem(0);
+            var next = layout.getNext();
+            Ext.getCmp('smart_cow_proc_inst_card_move_next').setDisabled(!layout.getNext());
+        }
     },
-    taskAssign:function(evt){
-        log(evt);
+    onAssignClick: function(cmp) {
+        var id = cmp.target.id.substring(cmp.target.id.lastIndexOf("-")+1,cmp.target.id.length);
+        Ext.get("smart-cow-assign")
+        var ass = Ext.get("smart-cow-assign-title_"+id);
+        ass.update("Assign the following dashboards:");
+        
+        var assul = Ext.get("smart-cow-assign-ul_"+id);       
+        var s2dash = this.getController("S2Dashboard");
+        var html = '';
+        Ext.each(s2dash.dashboards,function(dash,idx){
+            html += '<li class="assign_dash_li" guid="'+dash.guid+'">'+dash.name+'</li>';
+        });
+        assul.update(html);
+        Ext.select(".assign_dash_li").on('click', function(cmp,ele){
+            var guid = ele.getAttribute("guid");
+         
+            var url = SMARTCOW_TASKS+id+".json?";
+            //store it
+            Ext.Ajax.request({
+                url: url,
+                method: 'GET',          
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                //waitTitle: 'Connecting',
+                //waitMsg: 'Sending data...',                                     
+                //params: data,
+                scope:this,
+                jsonData: {},
+                success:  function(res){
+                    log('assign get ok',res);
+                    var task = Ext.JSON.decode(res.responseText);
+                    task.variables.variable[0].name="test1";
+                    var data = JSON.stringify(task);
+                    Ext.Ajax.request({
+                        url: url,
+                        method: 'POST',          
+                        //waitTitle: 'Connecting',
+                        //waitMsg: 'Sending data...',                                     
+                        params: data,
+                        scope:this,
+                        success:  function(res){
+                            log('assign ok');
+                        },                                   
+                        failure: function(res){
+                            log('assign failure');
+                        }
+                    });
+                    //TODO move to success
+                    ass.update('Updated!');
+                    assul.update('');
+                    var href = Ext.get("smart-cow-task-go-href_"+id);
+                    //TODO update href
+                },                                   
+                failure: function(){
+                    log('assign failure');
+                }
+            });
+        });
+        log("assign target click",cmp);
     },
     // Retrieve all assigned active tasks for a specified assignee
     getUserTasks:function (user,callback){
@@ -122,7 +196,7 @@ Ext.define('SeamlessC2.controller.SmartCow', {
                     var wfName  = pi.processDefinitionId
                     var taskName = pi.task.name
                 });
-       */
+                 */
             },
             failure: function(response){
                 log("getUserTasks failed for url:"+restURI, response);

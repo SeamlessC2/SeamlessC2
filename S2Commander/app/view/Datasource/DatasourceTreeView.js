@@ -2,7 +2,9 @@ Ext.define('SeamlessC2.view.Datasource.DatasourceTreeView', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.datasource_treeview',
     id:'datasource_treeview',
-    title:'Datasources',
+    //title:'Datasources',
     store: 'S2Datasource',
-    rootVisible: false
+    rootVisible: false,
+    width:'100%',
+    height:300
 });

@@ -3,7 +3,7 @@ Ext.define('SeamlessC2.view.Datasource.DatasourceView', {
     alias: 'widget.datasource_view',
     id:'datasource_view',
     
-    width:160,
+    flex:1,
     height:300, 
     layout: {
         type: 'accordion'
@@ -11,13 +11,14 @@ Ext.define('SeamlessC2.view.Datasource.DatasourceView', {
     items: [
     {
         title:'Datasources',
-        xtype: 'datasource_treeview'
+        xtype: 'datasource_main_content_view'
        
     },
     {
         title: 'Add Datasource',
         xtype:'datasource_select'
     }
+    
     ]
 });
 

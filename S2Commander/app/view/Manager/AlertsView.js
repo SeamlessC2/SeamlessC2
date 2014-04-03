@@ -6,6 +6,7 @@ Ext.define('SeamlessC2.view.Manager.AlertsView', {
     id:'alerts_view',
     store:'Alerts',
     title: 'Alerts',
+    autoScroll:true,
     items: {       
         xtype: 'dataview',
         tpl: Ext.create('Ext.XTemplate',

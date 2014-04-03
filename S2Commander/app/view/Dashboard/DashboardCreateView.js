@@ -40,27 +40,16 @@ Ext.define('SeamlessC2.view.Dashboard.DashboardCreateView', {
             border:0        
         },
         layout: {
-            type: 'vbox'
+            type: 'vbox',
+            align: 'center',
+pack: 'center'
         },
         items: [
         {
-            html:'',
-            width:'100%',
-            flex:.1                    
-        },
-        {
             xtype:'button',
             id:'dashpicker_createbtn',
-            //width:'100%',
-            height:20,
             cls: 'dash_finish_btn',
-            text:'Create Dashboard',
-            align:'center'
-        },    
-        {
-            html:'',
-            width:'100%',
-            flex:.8
+            text:'Create Dashboard'
         }
         ]
     }

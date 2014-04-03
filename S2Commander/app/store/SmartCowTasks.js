@@ -11,7 +11,7 @@ Ext.define('SeamlessC2.store.SmartCowTasks', {
         reader: {
             type: 'json',
             root: 'processInstance'
-            //successProperty: 'success'
+        //successProperty: 'success'
         }
-    }   
+    }
 });
